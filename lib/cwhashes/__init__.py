@@ -63,39 +63,48 @@ class CWHashes:
 
     """Return crypted MD5 password"""
     def _crypted_md5(self, magic='$1$'):
-        m = hashlib.md5()
         salt = self.salt or self._gen_random(punctuation=False)
         password = self.password
+        ctx = password + magic + salt
+        final =  hashlib.md5(password + salt + password).digest()
+        for pl in range(len(password), 0, -16):
+            if pl > 16:
+                ctx += final[:16]
+            else:
+                ctx += final[:pl]
 
-        m.update(password + magic + salt)
-        mixin = hashlib.md5(password + salt + password).digest()
         i = len(password)
         while i:
             if i & 1:
-                m.update('\x00')
+                ctx += chr(0)
             else:
-                m.update(password[0])
+                ctx += password[0]
             i >>= 1
-        final = m.digest()
-        for i in range(1000):
-            m2 = hashlib.md5()
-            if i & 1: m2.update(password)
-            else: m2.update(final)
-            if i % 3: m2.update(salt)
-            if i % 7: m2.update(password)
-            if i & 1: m2.update(final)
-            else: m2.update(password)
-            final = m2.digest()
-        itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
+        final = hashlib.md5(ctx).digest()
+        for i in range(1000):
+            ctx1 = ''
+            if i & 1: ctx1 += password
+            else: ctx1 += final[:16]
+            if i % 3: ctx1 += salt
+            if i % 7: ctx1 += password
+            if i & 1: ctx1 += final[:16]
+            else: ctx1 += password
+            final = hashlib.md5(ctx1).digest()
+
+        itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        print ctx1
         rearranged = ''
         for a, b, c in ((0, 6, 12), (1, 7, 13), (2, 8, 14), (3, 9, 15), (4, 10, 5)):
             v = ord(final[a]) << 16 | ord(final[b]) << 8 | ord(final[c])
             for i in range(4):
-                rearranged += itoa64[v & 0x3f]; v >>= 6
+                rearranged += itoa64[v & 0x3f]
+                v >>= 6
+
         v = ord(final[11])
         for i in range(2):
-            rearranged += itoa64[v & 0x3f]; v >>= 6
+            rearranged += itoa64[v & 0x3f]
+            v >>= 6
         hash = magic + salt + '$' + rearranged
         self.out['_c_md5'] = {
             'header': '{_c_md5}',
@@ -260,7 +269,7 @@ class CWHashes:
             'salt': s,
             'hash': hash }
         return hash
-  
+
     def __str__(self):
         keys = self.out.keys()
         keys.sort()
@@ -271,7 +280,7 @@ class CWHashes:
             lines.append("%13s: %13s %s" %
                 (k, s, self.out[k]['hash']))
         return '\n'.join(lines)
-        
+
     def __repr__(self):
         lines = [ "<%s" % self.__class__.__name__ ]
         lines.append(self.__str__())
