@@ -14,9 +14,9 @@ from base64 import urlsafe_b64decode as decode64
 import hashlib
 
 class CWHashes:
-    def __init__(self, password, salt=None):
-        self.password = password
-        self.salt = salt
+    def __init__(self, password=None, kwargs=None):
+        self.password = password or self._gen_random(**kwargs)
+        self.salt = kwargs['salt']
         self.out = {}
         return
 
@@ -41,19 +41,19 @@ class CWHashes:
 
 
     """Returns ramdom data"""
-    def _gen_random(self, len=10, upper=True, lower=True, digits=True,
-        punctuation=True):
+    def _gen_random(self, chars=10, upper=True, lower=True, digit=True,
+        punctuation=True, **trash):
         sample = ''
         if upper: sample += string.ascii_uppercase
         if lower: sample += string.ascii_lowercase
-        if digits: sample += string.digits
+        if digit: sample += string.digits
         if punctuation: sample += string.punctuation
         rnd=random.Random()
-        return ''.join(rnd.sample(sample, len))
+        return ''.join(rnd.sample(sample, chars))
 
     """Return UN*X crypted hash"""
     def crypt(self):
-        s = self.salt or self._gen_random(len=2, punctuation=False)
+        s = self.salt or self._gen_random(chars=2, punctuation=False)
         hash = crypt.crypt(self.password, s[:2])
         self.out['crypt'] = {
             'header': '{crypt}',
@@ -93,7 +93,6 @@ class CWHashes:
             final = hashlib.md5(ctx1).digest()
 
         itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-        print ctx1
         rearranged = ''
         for a, b, c in ((0, 6, 12), (1, 7, 13), (2, 8, 14), (3, 9, 15), (4, 10, 5)):
             v = ord(final[a]) << 16 | ord(final[b]) << 8 | ord(final[c])
@@ -237,9 +236,6 @@ class CWHashes:
             return None
 
 
-
-
-
     """Generate SHA1 hexdigest"""
     def sha1(self):
         hash = hashlib.sha1(self.password).hexdigest()
@@ -287,20 +283,32 @@ class CWHashes:
         lines.append('>')
         return '\n'.join(lines)
 
+def parse_options():
+    import optparse
+    u = "Usage: %prog [options] [password]"
+    p = optparse.OptionParser(usage=u)
+    p.add_option("-c", "--chars", dest="chars", default=10, metavar="CHARS",
+        help="Password length (default: %default)")
+    p.add_option("-s", "--salt", dest="salt", metavar="SALT",
+        help="Password salt (default: random)")
+    p.add_option("-l", "--lower", dest="lower", default=True,
+        action="store_false", help="Use lower case chars (default: %default)")
+    p.add_option("-u", "--upper", dest="upper", default=True,
+        action="store_false", help="Use upper case chars (default: %default)")
+    p.add_option("-d", "--digit", dest="digit", default=True,
+        action="store_false", help="Use digit chars (default: %default)")
+    p.add_option("-p", "--punctuation", dest="punctuation", default=False,
+        action="store_true", help="Use ponctuation chars (default: %default)")
+    (o, a) = p.parse_args()
+    return (o.__dict__, a)
 
 def __init__():
     import sys
-    try:
-        p = sys.argv[1]
-        try:
-            s = sys.argv[2]
-        except:
-            s = None
-    except:
-        sys.stderr.write("%s password [salt]" % sys.argv[0])
-        sys.exit(1)
 
-    c = CWHashes(p, s)
+    (o, a) = parse_options()
+    if len(a) == 0: a = [ None ]
+
+    c = CWHashes(a[0], o)
     c.run_all()
     print c
 
