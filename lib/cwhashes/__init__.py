@@ -8,8 +8,8 @@ __copyright__ = 'Copyright (c) 2009 Sébastien Gross <seb•ɑƬ•chezwam•ɖ�
 import random
 import string
 import crypt
-from base64 import urlsafe_b64encode as encode64
-from base64 import urlsafe_b64decode as decode64
+from base64 import b64encode as encode64
+from base64 import b64decode as decode64
 
 import hashlib
 
