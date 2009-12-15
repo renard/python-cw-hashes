@@ -15,6 +15,9 @@ import hashlib
 
 class CWHashes:
     def __init__(self, password=None, kwargs=None):
+        self.keymaps = {
+            'azerty': 'ertyuiopsdfghjklxcvbn',
+        }
         self.password = password or self._gen_random(**kwargs)
         self.salt = kwargs['salt']
         self.out = {}
@@ -44,21 +47,25 @@ class CWHashes:
     def _gen_random(self, chars=10, upper=True, lower=True, digit=True,
         punctuation=True, keymap=None, **trash):
         sample = ''
-        if upper: sample += string.ascii_uppercase
-        if lower: sample += string.ascii_lowercase
+        # First try to find common map
+        try:
+            layout = self.keymaps[keymap]
+            if upper: sample += layout.upper()
+            if lower: sample += layout.lower()
+        except:
+            # Try to list supported layouts
+            if keymap == 'list':
+                import sys
+                print "Supported keymaps and common letters with qwerty:\n"
+                for k in self.keymaps.keys():
+                    print "  %s: %s" % (k, self.keymaps[k])
+                sys.exit(0)
+            else:
+                # Common password
+                if upper: sample += string.ascii_uppercase
+                if lower: sample += string.ascii_lowercase
+                if punctuation: sample += string.punctuation
         if digit: sample += string.digits
-        if punctuation: sample += string.punctuation
-        if keymap:
-            layout = ''
-            if keymap == 'azerty':
-                layout = 'ertyuiopsdfghjklxcvbn'
-            # if layout is defined only
-            if layout:
-                sample = ''
-                if upper: sample += layout.upper()
-                if lower: sample += layout.lower()
-                if digit: sample += string.digits
-
         if not sample: sample = string.letters + string.digits
         rnd=random.Random()
         return ''.join(rnd.sample(sample, chars))
