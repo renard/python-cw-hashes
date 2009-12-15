@@ -111,7 +111,8 @@ class CWHashes:
             else: ctx1 += password
             final = hashlib.md5(ctx1).digest()
 
-        itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+        itoa64 = './' + string.digits + string.ascii_uppercase \
+            + string.ascii_lowercase
         rearranged = ''
         for a, b, c in ((0, 6, 12), (1, 7, 13), (2, 8, 14), (3, 9, 15), (4, 10, 5)):
             v = ord(final[a]) << 16 | ord(final[b]) << 8 | ord(final[c])
