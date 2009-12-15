@@ -17,6 +17,9 @@ class CWHashes:
     def __init__(self, password=None, kwargs=None):
         self.keymaps = {
             'azerty': 'ertyuiopsdfghjklxcvbn',
+            'colemak': 'qwahzxcvbm',
+            'qwertz': 'qwertuiopasdfghjklxcvbnm',
+            'qzerty': 'ertuiopsdfghjklxcvbn',
         }
         self.password = password or self._gen_random(**kwargs)
         self.salt = kwargs['salt']
