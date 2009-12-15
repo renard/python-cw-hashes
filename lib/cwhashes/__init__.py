@@ -68,7 +68,20 @@ class CWHashes:
         if digit: sample += string.digits
         if not sample: sample = string.letters + string.digits
         rnd=random.Random()
-        return ''.join(rnd.sample(sample, chars))
+        sample = list(sample)
+        if chars > len(sample):
+            new_chars = len(sample) / 2
+            loops = chars / new_chars
+            ret = ''
+            for x in xrange(loops):
+                ret += self._gen_random(new_chars, upper, lower, digit,
+                    punctuation, keymap)
+            if len(ret) < chars:
+                ret += self._gen_random(chars - len(ret), upper, lower,
+                    digit, punctuation, keymap)
+            return ret
+        else:
+            return ''.join(rnd.sample(sample, chars))
 
     """Return UN*X crypted hash"""
     def crypt(self):
@@ -306,9 +319,10 @@ class CWHashes:
 def parse_options():
     import optparse
     u = "Usage: %prog [options] [password]"
-    p = optparse.OptionParser(usage=u)
+    e = "Use '-k list' to list supported keymap"
+    p = optparse.OptionParser(usage=u, epilog=e)
     p.add_option("-c", "--chars", dest="chars", default=10, metavar="CHARS",
-        help="Password length (default: %default)")
+        type="int", help="Password length (default: %default)")
     p.add_option("-s", "--salt", dest="salt", metavar="SALT",
         help="Password salt (default: random)")
     p.add_option("-L", "--no-lower", dest="lower", default=True,
