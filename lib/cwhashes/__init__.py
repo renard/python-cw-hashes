@@ -40,14 +40,26 @@ class CWHashes:
 
 
 
-    """Returns ramdom data"""
+    """Returns random data"""
     def _gen_random(self, chars=10, upper=True, lower=True, digit=True,
-        punctuation=True, **trash):
+        punctuation=True, keymap=None, **trash):
         sample = ''
         if upper: sample += string.ascii_uppercase
         if lower: sample += string.ascii_lowercase
         if digit: sample += string.digits
         if punctuation: sample += string.punctuation
+        if keymap:
+            layout = ''
+            if keymap == 'azerty':
+                layout = 'ertyuiopsdfghjklxcvbn'
+            # if layout is defined only
+            if layout:
+                sample = ''
+                if upper: sample += layout.upper()
+                if lower: sample += layout.lower()
+                if digit: sample += string.digits
+
+        if not sample: sample = string.letters + string.digits
         rnd=random.Random()
         return ''.join(rnd.sample(sample, chars))
 
@@ -291,14 +303,17 @@ def parse_options():
         help="Password length (default: %default)")
     p.add_option("-s", "--salt", dest="salt", metavar="SALT",
         help="Password salt (default: random)")
-    p.add_option("-l", "--lower", dest="lower", default=True,
-        action="store_false", help="Use lower case chars (default: %default)")
-    p.add_option("-u", "--upper", dest="upper", default=True,
-        action="store_false", help="Use upper case chars (default: %default)")
-    p.add_option("-d", "--digit", dest="digit", default=True,
-        action="store_false", help="Use digit chars (default: %default)")
+    p.add_option("-L", "--no-lower", dest="lower", default=True,
+        action="store_false", help="Do not use lower case chars (default: %default)")
+    p.add_option("-U", "--no-upper", dest="upper", default=True,
+        action="store_false", help="Do not use upper case chars (default: %default)")
+    p.add_option("-D", "--no-digit", dest="digit", default=True,
+        action="store_false", help="Do not use digit chars (default: %default)")
     p.add_option("-p", "--punctuation", dest="punctuation", default=False,
         action="store_true", help="Use ponctuation chars (default: %default)")
+    p.add_option("-k", "--keymap", dest="keymap", default=None, metavar="KEYMAP",
+        help="Make sure password is same in qwerty and KEYMAP (default: %default)")
+
     (o, a) = p.parse_args()
     return (o.__dict__, a)
 
