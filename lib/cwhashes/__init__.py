@@ -60,7 +60,9 @@ class CWHashes:
             if keymap == 'list':
                 import sys
                 print "Supported keymaps and common letters with qwerty:\n"
-                for k in self.keymaps.keys():
+                keys = self.keymaps.keys()
+                keys.sort()
+                for k in keys:
                     print "  %s: %s" % (k, self.keymaps[k])
                 sys.exit(0)
             else:
