@@ -75,7 +75,7 @@ class CWHashes:
         rnd=random.Random()
         sample = list(sample)
         if chars > len(sample):
-            new_chars = len(sample) / 2
+            new_chars = len(sample)
             loops = chars / new_chars
             ret = ''
             for x in xrange(loops):
@@ -84,7 +84,9 @@ class CWHashes:
             if len(ret) < chars:
                 ret += self._gen_random(chars - len(ret), upper, lower,
                     digit, punctuation, keymap)
-            return ret
+            ret = list(ret)
+            rnd.shuffle(ret)
+            return ''.join(ret)
         else:
             return ''.join(rnd.sample(sample, chars))
 
