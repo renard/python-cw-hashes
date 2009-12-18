@@ -188,6 +188,8 @@ class CWHashes:
                 self.password = self._gen_random(**kwargs)
                 self.check_password_strenght()
                 self.tries += 1
+                if self.tries > kwargs['iterations']:
+                    return
         self.salt = kwargs['salt']
         self.out = {}
         return
@@ -572,6 +574,9 @@ def parse_options():
     p.add_option("-S", "--min-score", dest="score", default=100,
         metavar="SCORE", type="int",
         help="Minimum required password score (default: %default)")
+    p.add_option("-M", "--max-iter", dest="iterations", default=10000,
+        metavar="ITERATIONS", type="int",
+        help="Maximum allowed computing iterations (default: %default)")
     p.add_option("-c", "--chars", dest="chars", default=10, metavar="CHARS",
         type="int", help="Password length (default: %default)")
     p.add_option("-s", "--salt", dest="salt", metavar="SALT",
@@ -599,6 +604,8 @@ def __init__():
     if o['count'] > 1:
         for i in xrange(o['count']):
             c = CWHashes(None, o)
+            if c.checks['score'] < o['score']:
+                continue
             print("%s (score: %d found in %d tries)" % (c.password,
                 c.checks['score'], c.tries))
         sys.exit(0)
