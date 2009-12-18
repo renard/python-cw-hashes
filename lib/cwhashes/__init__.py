@@ -184,7 +184,7 @@ class CWHashes:
             self.check_password_strenght()
         else:
             self.init_results()
-            while self.checks['score'] < 100:
+            while self.checks['score'] < kwargs['score']:
                 self.password = self._gen_random(**kwargs)
                 self.check_password_strenght()
                 self.tries += 1
@@ -567,14 +567,21 @@ def parse_options():
     p = optparse.OptionParser(usage=u, epilog=e)
     p.add_option("-a", "--analyze", dest="analyze", default=False,
         action="store_true", help="Print password analyzis (default: %default)")
+    p.add_option("-C", "--count", dest="count", default=1, metavar="COUNT",
+        type="int", help="Generate COUNT passwords (default: %default)")
+    p.add_option("-S", "--min-score", dest="score", default=100,
+        metavar="SCORE", type="int",
+        help="Minimum required password score (default: %default)")
     p.add_option("-c", "--chars", dest="chars", default=10, metavar="CHARS",
         type="int", help="Password length (default: %default)")
     p.add_option("-s", "--salt", dest="salt", metavar="SALT",
         help="Password salt (default: random)")
     p.add_option("-L", "--no-lower", dest="lower", default=True,
-        action="store_false", help="Do not use lower case chars (default: %default)")
+        action="store_false",
+        help="Do not use lower case chars (default: %default)")
     p.add_option("-U", "--no-upper", dest="upper", default=True,
-        action="store_false", help="Do not use upper case chars (default: %default)")
+        action="store_false",
+        help="Do not use upper case chars (default: %default)")
     p.add_option("-D", "--no-digit", dest="digit", default=True,
         action="store_false", help="Do not use digit chars (default: %default)")
     p.add_option("-p", "--punctuation", dest="punctuation", default=False,
@@ -589,6 +596,12 @@ def __init__():
     import sys
 
     (o, a) = parse_options()
+    if o['count'] > 1:
+        for i in xrange(o['count']):
+            c = CWHashes(None, o)
+            print("%s (score: %d found in %d tries)" % (c.password,
+                c.checks['score'], c.tries))
+        sys.exit(0)
     if len(a) == 0: a = [ None ]
     c = CWHashes(a[0], o)
     c.run_all()
