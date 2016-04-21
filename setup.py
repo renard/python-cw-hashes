@@ -13,7 +13,7 @@ setup(name='CWHashes',
     url='',
     license="Python",
     packages=['cwhashes'],
-    package_dir={'cwhashes': 'lib/cwhashes'},
+    package_dir={'cwhashes': 'cwhashes'},
     )
 
 # vim:ts=4:sw=4:sts=4:set expandtab:
